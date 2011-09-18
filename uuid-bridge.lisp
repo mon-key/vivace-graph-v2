@@ -3,7 +3,7 @@
 ;;; ==============================
 
 ;;; ==============================
-;; :NOTE vivace-graph-v2/uuid-bridge.lisp relocats symbols previously found in:
+;; :NOTE vivace-graph-v2/uuid-bridge.lisp relocates symbols previously found in:
 ;;   vivace-graph-v2/uuid.lisp
 ;;   vivace-graph-v2/data-types.lisp
 ;; 
@@ -16,8 +16,6 @@
 ;; `make-uuid'
 ;; `sxhash-uuid'
 ;; `make-uuid-table'
-;;
-;; :RENAMED `make-uuid' -> `make-v1-uuid'
 ;;
 ;; This file creates a new package "VG-UUID".
 ;; Orginally vivace-graph-v2/uuid.lisp operated inside the package "UUID" and in
@@ -54,7 +52,6 @@
            #:uuid-eql
            #:serialize-uuid
            ;; #:uuid-from-string
-           ;; #:make-v1-uuid
            ;; #:make-v4-uuid
            ))
 
@@ -86,22 +83,18 @@
     nil)
   (:documentation "Equality check for UUIDs."))
 
-;; (defclass vg-uuid (unicly:unique-universal-identifier)
-;;   ())
-
 ;; load-triples     -- evaluates uuid:make-uuid-from-string #UPDATED
 ;; %set-triple-cf   -- evaluates uuid:make-uuid-from-string and vg-uuid:uuid? #UPDATED
 ;; %undelete-triple -- evaluates uuid:make-uuid-from-string and vg-uuid:uuid? #UPDATED
 ;; %delete-triple   -- evaluates uuid:make-uuid-from-string and vg-uuid:uuid? #UPDATED
-;; :NOTE this isn't correct for `indexable-v5-uuid' as returns instances of
-;; unicly:unique-universal-identifier
+;; :NOTE this isn't correct for `indexable-uuid' as returns instances of
+;; `unicly:unique-universal-identifier'
 (defun uuid-from-string (string)
   (unicly:make-uuid-from-string string))
 
 ;; lookup-triple    -- evaluates vg-uuid:uuid?
 ;; add-triple       -- evaluates vg-uuid::make-v4-uuid
-
-;; serialize -- specializes on unicly:unique-universal-identifier and vg-uuid:serialize-uuid #UPDATED
+;; serialize        -- specializes on unicly:unique-universal-identifier and vg-uuid:serialize-uuid #UPDATED
 (defun serialize-uuid (uuid stream)
   ;; uuid-serialize-bit-vector-bits
   (unicly::uuid-serialize-byte-array-bytes uuid stream))
@@ -117,12 +110,11 @@
 (defun make-v5-uuid (namespace uuid)
   (make-v5-uuid-indexable namespace uuid))
 
-;; make-v4-uuid is used as the id slot of a transaction
 (defun make-v4-uuid ()
   "Create a new version four UUID."
   (unicly:make-v4-uuid))
 
-;; deftemplate #UPDATED
+;; deftemplate
 (defun make-anonymous-node ()
   (format nil "_anon:~A" (vg-uuid::make-v4-uuid)))
 
@@ -135,7 +127,7 @@
 
 ;; (sb-ext:define-hash-table-test vg-uuid:uuid-eql sxhash-uuid)
 
-;; make-fresh-store #UPDATED
+;; make-fresh-store
 (defun make-uuid-table (&key size rehash-size rehash-threshold weakness synchronized) 
   (unicly:make-hash-table-uuid :size             size
                                :rehash-size      rehash-size 
@@ -145,7 +137,8 @@
 
 
 ;;; ==============================
-;;; :NOTE Experimentatal the bit-vector and byte-array related macros are not yet defined
+;;; :NOTE Experimentatal some bit-vector and byte-array related macros are not
+;;; yet defined by the Unicly system
 
 (defclass indexable-uuid (unicly:unique-universal-identifier)
   ((bit-vector 
@@ -156,15 +149,7 @@
 ;; define the functions `make-v3-uuid-indexable', `make-v5-uuid-indexable',
 ;; `make-v4-uuid-indexable', `make-uuid-from-string',
 ;; `make-uuid-from-byte-array-indexable'
-;; (make-v5-uuid-indexable unicly:*uuid-namespace-dns* "bubba")
-;; (unicly::def-make-v5-uuid-extended indexable indexable-v5-uuid)
-;; (unicly::def-make-uuid-byte-array-extended indexable indexable-uuid)
-
 (unicly::def-make-uuid-extend-class-fun indexable indexable-uuid)
-
-;; (defparameter *tt--indexed* (make-v4-uuid-indexable))
-;; (defparameter *tt--indexed* (make-uuid-from-byte-array-indexable (unicly::uuid-to-byte-array (make-v5-uuid-indexable unicly::*uuid-namespace-dns* "bubba"))))
-;; (unicly::%verify-valid-subclass-and-slots 'indexable-uuid)
 
 (defmethod update-instance-for-different-class  ((old unicly:unique-universal-identifier)
                                                  (new indexable-uuid)
@@ -185,7 +170,18 @@
           (slot-value new 'bit-vector)  (unicly:uuid-to-bit-vector old)
           (slot-value new 'integer-128) (unicly::uuid-bit-vector-to-integer (slot-value new 'bit-vector)))))
 
+;; (unicly::%verify-valid-subclass-and-slots 'indexable-uuid)
 ;; (make-v5-uuid-indexable unicly:*uuid-namespace-dns* "bubba")
+;; (make-v5-uuid-indexable unicly:*uuid-namespace-dns* "bubba")
+;; (unicly::def-make-v5-uuid-extended indexable indexable-v5-uuid)
+;; (unicly::def-make-uuid-byte-array-extended indexable indexable-uuid)
+;; (make-v4-uuid-indexable)
+;; (defparameter *tt--indexed* 
+;;   (make-uuid-from-byte-array-indexable 
+;;    (unicly::uuid-to-byte-array 
+;;     (make-v5-uuid-indexable unicly::*uuid-namespace-dns* "bubba"))))
+
+
 
 ;;; ==============================
 ;; (defun uuid-to-byte-array (uuid &optional (type-specifier nil))
