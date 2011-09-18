@@ -67,7 +67,7 @@
     (unicly:unique-universal-identifier-p thing))
   (:documentation "UUID type predicate."))
 
-;; prolog-equal -- safe 
+;; prolog-equal    -- safe 
 ;; triple-eql      -- should be safe 
 ;;                    this is specialized on triples by comparing triple identity per the uuid which dereferences them, 
 ;; triple-equal     -- Ths one is trickier -- it is as above but also requires that the subject, predicate, and object of two  triples satisfy cl:equal
@@ -75,12 +75,9 @@
 ;; make-fresh-store --> (make-skip-list :key-equal 'equalp :value-equal 'vg-uuid:uuid-eql :duplicates-allowed? t)
 ;; we should prob. subclass unicly:unique-universal-identifier before using these.
 (defgeneric uuid-eql (uuid1 uuid2)
-  (:method ((uuid1 vg-uuid) (uuid2 vg-uuid))
+  ;; :NOTE unicly:uuid-eql may return true for two equal uuid-bit-vector-128's
+  (:method ((uuid1 t) (uuid2 t))
     (unicly:uuid-eql uuid1 uuid1))
-  (:method ((uuid1 vg-uuid) uuid2)
-    nil)
-  (:method (uuid1 (uuid2 vg-uuid))
-    nil)
   (:documentation "Equality check for UUIDs."))
 
 ;; load-triples     -- evaluates uuid:make-uuid-from-string #UPDATED
